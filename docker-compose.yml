@@ -43,7 +43,8 @@ services:
       - mysql
     networks:
       - laravel_network
-
+    command: sh -c "npm install && docker-php-entrypoint php-fpm"
+    
   # crond:
   #  image: your_custom_cron_image
   #  volumes:

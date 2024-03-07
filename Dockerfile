@@ -14,8 +14,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-COPY composer.json composer.lock ./
-RUN composer install --no-scripts --no-autoloader
+COPY composer.json ./
+# Check if composer.lock exists before copying
+# If it exists, copy it and run composer install
+# If it doesn't exist, run composer install without it
+COPY composer.lock* ./
+RUN if [ -f composer.lock ]; then composer install --no-scripts --no-autoloader; else composer install --no-scripts --no-autoloader; fi
 
 # Stage 2: Build frontend assets
 FROM node:14 AS node_builder

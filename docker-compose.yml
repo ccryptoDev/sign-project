@@ -6,7 +6,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
     networks:
@@ -44,7 +44,7 @@ services:
     networks:
       - laravel_network
     command: sh -c "npm install && docker-php-entrypoint php-fpm"
-    
+
   # crond:
   #  image: your_custom_cron_image
   #  volumes:

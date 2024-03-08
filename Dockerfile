@@ -24,7 +24,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-scripts --no-autoloader
 
 # Stage 2: Build frontend assets
-FROM node:14 AS node_builder
+FROM node:18 AS node_builder
 
 WORKDIR /var/www/html
 

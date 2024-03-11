@@ -15,27 +15,45 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Stage 2: Install npm and build frontend assets
-FROM node:18 AS node_builder
-
+# Set working directory
 WORKDIR /var/www/html
 
+# Copy Laravel application code
+COPY . .
+
+# Install Composer dependencies
+RUN composer install --no-scripts --no-autoloader
+
+# Stage 2: Build frontend assets
+FROM node:21 AS node_builder
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy Laravel application code from previous stage
+COPY --from=php_builder /var/www/html .
+
+# Copy Composer dependencies from previous stage
+COPY --from=php_builder /var/www/html/vendor ./vendor
+
+# Install npm packages
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy PHP dependencies from previous stage
-FROM php_builder AS php_with_node
+# Build frontend assets
+RUN npm run prod
 
+# Stage 3: Final image
+FROM php:8-fpm
+
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy vendor directory from php_builder stage
+# Copy PHP dependencies from previous stage
 COPY --from=php_builder /var/www/html/vendor ./vendor
 
-# Copy npm dependencies and built assets from node_builder stage
-COPY --from=node_builder /var/www/html/node_modules ./node_modules
-
-# Copy Laravel application code including public directory
-COPY . .
+# Copy Laravel application code from previous stage
+COPY --from=node_builder /var/www/html .
 
 # Expose port
 EXPOSE 9000
